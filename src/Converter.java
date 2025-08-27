@@ -6,13 +6,13 @@ import java.nio.file.StandardCopyOption;
 
 public class Converter {
 
+    // Instale estes dois pacotes primeiro, pois sao dependencias. Pode instalar usando brew
     private static final String FFMPEG = "ffmpeg";          // precisa estar no PATH
     private static final String HEIF_CONVERT = "heif-convert"; // precisa estar no PATH
 
     public static void main(String[] args) throws IOException {
-        Path origem = Paths.get("/Users/Shared/backup-do-linux/Pessoal/Elena/Fotos Google Photos com Elana");
-        Path destinoPenDrive = Paths.get("/Volumes/CAIO E GEO");
-        Path destinoTemporario = Paths.get("/Users/bfa/Downloads/temporario");
+        Path origem = Paths.get("/Users/youruser/any sub dir");
+        Path destino = Paths.get("/Users/bfa/Downloads/temporario");
 
         Files.walk(origem).forEach(path -> {
             if (Files.isDirectory(path)) return;
@@ -25,11 +25,11 @@ public class Converter {
                     case "jpg":
                     case "jpeg":
                     case "mp4":
-                        if (Files.exists(destinoPenDrive.resolve(nomeArquivo))) {
+                        if (Files.exists(destino.resolve(nomeArquivo))) {
                             break;
                         }
                         // Nao converte, apenas copia
-                        Path destinoArquivo = destinoTemporario.resolve(nomeArquivo);
+                        Path destinoArquivo = destino.resolve(nomeArquivo);
                         Files.copy(path, destinoArquivo, StandardCopyOption.REPLACE_EXISTING);
                         System.out.println("Copiado: " + nomeArquivo);
                         break;
@@ -38,12 +38,12 @@ public class Converter {
                     case "heif":
                         // converte para JPEG
                         String novoNomeImg = nomeArquivo.replaceAll("(?i)\\.(heic|heif)$", ".jpg");
-                        if (Files.exists(destinoPenDrive.resolve(novoNomeImg))) {
-                            System.out.println("Arquivo ja existe no pen-drive: " + novoNomeImg);
+                        if (Files.exists(destino.resolve(novoNomeImg))) {
+                            System.out.println("Arquivo ja existe: " + novoNomeImg);
                             break;
                         }
 
-                        Path destinoImg = destinoTemporario.resolve(novoNomeImg);
+                        Path destinoImg = destino.resolve(novoNomeImg);
                         runHeifConvert(path.toString(), destinoImg.toString());
                         break;
 
@@ -51,11 +51,11 @@ public class Converter {
                     case "qt":
                         // converte para MP4
                         String novoNomeVideo = nomeArquivo.replaceAll("(?i)\\.(mov|qt)$", ".mp4");
-                        if (Files.exists(destinoPenDrive.resolve(novoNomeVideo))) {
-                            System.out.println("Arquivo ja existe no pen-drive: " + novoNomeVideo);
+                        if (Files.exists(destino.resolve(novoNomeVideo))) {
+                            System.out.println("Arquivo ja existe: " + novoNomeVideo);
                             break;
                         }
-                        Path destinoVideo = destinoTemporario.resolve(novoNomeVideo);
+                        Path destinoVideo = destino.resolve(novoNomeVideo);
                         runFFmpeg(path.toString(), destinoVideo.toString());
                         break;
                     default:
@@ -76,7 +76,7 @@ public class Converter {
     private static void runFFmpeg(String origem, String destino) throws IOException, InterruptedException {
         String[] comando = new String[]{FFMPEG, "-i", origem, "-c:v", "libx264", "-crf", "23", "-c:a", "aac", destino};
         ProcessBuilder pb = new ProcessBuilder(comando);
-//        pb.inheritIO(); // mostra saída do ffmpeg
+        // pb.inheritIO(); // mostra saída do ffmpeg
         Process processo = pb.start();
         int exitCode = processo.waitFor();
 
@@ -90,7 +90,7 @@ public class Converter {
     private static void runHeifConvert(String origem, String destino) throws IOException, InterruptedException {
         String[] comando = new String[]{HEIF_CONVERT, origem, destino};
         ProcessBuilder pb = new ProcessBuilder(comando);
-//        pb.inheritIO(); // mostra saída do heif-convert
+        // pb.inheritIO(); // mostra saída do heif-convert
         Process processo = pb.start();
         int exitCode = processo.waitFor();
 
